@@ -25,7 +25,7 @@ A modern learning management system built with React, TypeScript, and Firebase.
 1. Clone the repository:
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/ironsupr/EduGenie-Final.git
 cd edugenie-learning-platform
 ```
 
