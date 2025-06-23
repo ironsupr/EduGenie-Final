@@ -1,0 +1,74 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Firebase credentials and sensitive files
+JSON/
+*.json
+!package.json
+!tsconfig*.json
+!eslint.config.js
+
+# Firebase documentation and temporary files
+FIREBASE_STATUS.md
+FIREBASE_SETUP_STATUS.md
+FIREBASE_CHECKERS_README.md
+FIREBASE_SETUP_GUIDE.md
+COMPREHENSIVE_FIREBASE_CHECKER_README.md
+LANDING_PAGE_DIAGNOSIS.md
+STORAGE_ALTERNATIVES.md
+YOUTUBE_IMPORT_GUIDE.md
+
+# Development and testing files
+*.py
+*.bat
+debug-*.js
+test-*.js
+inspect-*.js
+check-*.js
+remove-duplicates.js
+comprehensive_firebase_checker.py
+enhanced_firebase_checker.py
+final_firebase_verification.py
+quick_app_diagnosis.py
+quick_firebase_check.py
+emergency-test.html
+troubleshoot.html
+
+# Allow YT_AGENT but exclude its cache and output
+!YT_AGENT/
+YT_AGENT/__pycache__/
+YT_AGENT/output/*.json
+YT_AGENT/test_output/
+
+node_modules/
+dist/
+
+.env.local
+syllabus
