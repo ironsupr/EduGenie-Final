@@ -31,9 +31,15 @@ build/
 .env.test
 
 # Firebase Service Account Keys (SENSITIVE!)
-JSON/edugenie-*.json
+JSON/
+*.json
+!package.json
+!package-lock.json
+!tsconfig*.json
+!.vscode/*.json
 *service-account*.json
 *firebase-adminsdk*.json
+*-firebase-adminsdk-*.json
 
 # ================================
 # Operating System
