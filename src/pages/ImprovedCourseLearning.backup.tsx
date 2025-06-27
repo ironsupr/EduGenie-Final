@@ -1734,9 +1734,16 @@ const ImprovedCourseLearning = () => {
                           )}
                         </button>
                       </div>
-                    </div>                  )}
+                    </div>
+                  )}
+                      {isGeneratingFlashcards && (
+                        <div className="flex justify-center">
+                          <Loader2 className="w-8 h-8 animate-spin text-yellow-600" />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
 
               {activeTab === 'quiz' && (
                 <div>

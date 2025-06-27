@@ -129,7 +129,7 @@ const YouTubeAIAgent: React.FC = () => {
 
       // Step 8: Save course
       updateStepStatus('save', 'processing');      // Save to Firebase
-      await createCourse({
+      const courseId = await createCourse({
         title: course.title,
         description: course.description,
         instructor: course.instructor,
@@ -156,7 +156,8 @@ const YouTubeAIAgent: React.FC = () => {
             videoUrl: video.url,
             content: video.notes,
             resources: []
-          })),          quiz: {
+          })),
+          quiz: {
             id: `quiz-${module.id}`,
             title: `${module.name} Quiz`,
             description: `Test your understanding of ${module.name}`,
@@ -174,13 +175,11 @@ const YouTubeAIAgent: React.FC = () => {
             attempts: 3
           }
         })),
-        createdAt: new Date(),
-        updatedAt: new Date(),
         isPublished: true
       });
-
-      updateStepStatus('save', 'completed');
-      setResult(course);
+      
+      // Update the result with the Firebase-generated course ID
+      setResult({ ...course, id: courseId });      updateStepStatus('save', 'completed');
 
     } catch (err) {
       console.error('Error processing playlist:', err);

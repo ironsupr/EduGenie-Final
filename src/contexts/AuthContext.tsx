@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               Please enable Authentication, Firestore, and Storage in your Firebase Console:
               <br />
               <a 
-                href="https://console.firebase.google.com/project/edugenie-h-ba04c/authentication" 
+                href="https://console.firebase.google.com/project/edugenie-a/authentication" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:underline"

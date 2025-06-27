@@ -1,55 +1,107 @@
-# Logs
-logs
-*.log
+# ================================
+# EduGenie - React/TypeScript/Vite Project
+# Comprehensive .gitignore
+# ================================
+
+# ================================
+# Dependencies
+# ================================
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# ================================
+# Build Output
+# ================================
+dist/
+dist-ssr/
+build/
+.vite/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-# Environment variables
+# ================================
+# Environment Variables & Secrets
+# ================================
 .env
 .env.local
-.env.production
 .env.development
+.env.production
+.env.test
 
-# Firebase credentials and sensitive files
-JSON/
-*.json
-!package.json
-!tsconfig*.json
-!eslint.config.js
+# Firebase Service Account Keys (SENSITIVE!)
+JSON/edugenie-*.json
+*service-account*.json
+*firebase-adminsdk*.json
 
-# Firebase documentation and temporary files
-FIREBASE_STATUS.md
-FIREBASE_SETUP_STATUS.md
-FIREBASE_CHECKERS_README.md
-FIREBASE_SETUP_GUIDE.md
-COMPREHENSIVE_FIREBASE_CHECKER_README.md
-LANDING_PAGE_DIAGNOSIS.md
-STORAGE_ALTERNATIVES.md
-YOUTUBE_IMPORT_GUIDE.md
+# ================================
+# Operating System
+# ================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
 
-# Development and testing files
-*.py
-*.bat
-debug-*.js
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.nfs*
+
+# ================================
+# IDEs & Editors
+# ================================
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+*.swp
+*.swo
+*~
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*.tmp
+
+# ================================
+# Development & Testing Files
+# ================================
+# Test and Debug Files
 test-*.js
+test-*.ts
+debug-*.js
+debug-*.html
+*test.html
+emergency-test.html
+troubleshoot.html
+ai-notes-test.html
+
+# Python Development Files
+*.py
+*.pyc
+__pycache__/
+.venv/
+requirements-*.txt
+*.bat
+
+# Inspection and Analysis Files
 inspect-*.js
 check-*.js
 remove-duplicates.js
@@ -58,17 +110,85 @@ enhanced_firebase_checker.py
 final_firebase_verification.py
 quick_app_diagnosis.py
 quick_firebase_check.py
-emergency-test.html
-troubleshoot.html
 
-# Allow YT_AGENT but exclude its cache and output
-!YT_AGENT/
-YT_AGENT/__pycache__/
-YT_AGENT/output/*.json
-YT_AGENT/test_output/
+# ================================
+# Documentation & Analysis (Development Only)
+# ================================
+# Keep main documentation but exclude development analysis
+FIREBASE_STATUS.md
+FIREBASE_SETUP_STATUS.md
+FIREBASE_CHECKERS_README.md
+FIREBASE_SETUP_GUIDE.md
+COMPREHENSIVE_FIREBASE_CHECKER_README.md
+LANDING_PAGE_DIAGNOSIS.md
+STORAGE_ALTERNATIVES.md
+YOUTUBE_IMPORT_GUIDE.md
+ROUTING_AGENTS_ANALYSIS.md
+FINAL_ANALYSIS_REPORT.md
+AI_NOTES_TESTING_REPORT.md
 
-node_modules/
-dist/
+# Keep core documentation
+!README.md
+!docs/
+!IMPLEMENTATION_COMPLETE.md
 
-.env.local
-syllabus
+# ================================
+# User Uploads & Generated Content
+# ================================
+# Syllabus uploads (user content)
+Syllabus/
+syllabus/
+uploads/
+
+# Generated content
+output/
+temp/
+tmp/
+
+# ================================
+# Logs
+# ================================
+logs/
+*.log
+log/
+
+# ================================
+# Cache & Temporary Files
+# ================================
+.cache/
+.temp/
+.tmp/
+*.tmp
+*.temp
+
+# ================================
+# Package Manager
+# ================================
+.pnpm-store/
+.yarn/
+
+# ================================
+# Runtime & Process Files
+# ================================
+.pid
+*.pid
+*.seed
+*.pid.lock
+
+# ================================
+# Coverage & Testing
+# ================================
+coverage/
+.nyc_output/
+.coverage/
+*.lcov
+
+# ================================
+# TypeScript
+# ================================
+*.tsbuildinfo
+
+# ================================
+# Misc
+# ================================
+.eslintcache

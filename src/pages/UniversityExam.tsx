@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Upload, 
   FileText, 
@@ -13,13 +14,66 @@ import {
   PlayCircle,
   Loader2,
   ArrowRight,
-  GraduationCap
+  GraduationCap,
+  AlertTriangle,
+  X,
+  Copy
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { uploadSyllabus, createStudyPlan } from '../services/studyPlanService';
 import { syllabusProcessorService, SyllabusAnalysis, GeneratedCourse } from '../services/syllabusProcessorService';
 import { createCourse } from '../services/courseService';
 import { StudyPlan } from '../types';
+
+// Constants
+const STUDY_PLAN_CONSTANTS = {
+  DEFAULT_HOURS_PER_WEEK: 15,
+  MAX_FILE_SIZE_MB: 10,
+  SUPPORTED_FORMATS: ['.pdf', '.doc', '.docx', '.txt'],
+  UPLOAD_TIMEOUT_MS: 30000,
+} as const;
+
+// Types
+interface ToastNotification {
+  id: string;
+  type: 'success' | 'error' | 'info';
+  message: string;
+  duration?: number;
+}
+
+interface FileValidationResult {
+  isValid: boolean;
+  error?: string;
+}
+
+// Toast Component
+const Toast: React.FC<{ toast: ToastNotification; onRemove: (id: string) => void }> = ({ toast, onRemove }) => {
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      onRemove(toast.id);
+    }, toast.duration || 5000);
+    return () => clearTimeout(timer);
+  }, [toast.id, toast.duration, onRemove]);
+
+  const bgColor = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    info: 'bg-blue-500'
+  }[toast.type];
+
+  return (
+    <div className={`${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center justify-between min-w-[300px]`}>
+      <span className="text-sm font-medium">{toast.message}</span>
+      <button
+        onClick={() => onRemove(toast.id)}
+        className="ml-4 text-white hover:text-gray-200"
+        aria-label="Close notification"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
 
 const UniversityExam = () => {  const [dragActive, setDragActive] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -29,8 +83,81 @@ const UniversityExam = () => {  const [dragActive, setDragActive] = useState(fal
   const [syllabusAnalysis, setSyllabusAnalysis] = useState<SyllabusAnalysis | null>(null);
   const [generatedCourse, setGeneratedCourse] = useState<GeneratedCourse | null>(null);
   const [currentStep, setCurrentStep] = useState<'upload' | 'analyzing' | 'complete' | 'generating-course' | 'course-ready'>('upload');
+  const [toasts, setToasts] = useState<ToastNotification[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  // Utility functions
+  const addToast = (toast: Omit<ToastNotification, 'id'>) => {
+    const id = Date.now().toString();
+    setToasts(prev => [...prev, { ...toast, id }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
+  const validateFile = (file: File): FileValidationResult => {
+    const maxSizeBytes = STUDY_PLAN_CONSTANTS.MAX_FILE_SIZE_MB * 1024 * 1024;
+    const extension = file.name.split('.').pop();
+    
+    if (extension && !STUDY_PLAN_CONSTANTS.SUPPORTED_FORMATS.some(format => format === `.${extension.toLowerCase()}`)) {
+      return { isValid: false, error: `File type not supported. Please use: ${STUDY_PLAN_CONSTANTS.SUPPORTED_FORMATS.join(', ')}` };
+    }
+    
+    if (file.size > maxSizeBytes) {
+      return { isValid: false, error: `File size too large. Maximum size: ${STUDY_PLAN_CONSTANTS.MAX_FILE_SIZE_MB}MB` };
+    }
+    
+    return { isValid: true };
+  };
+
+  const handleDownloadStudyPlan = async () => {
+    if (!studyPlan || !syllabusAnalysis) return;
+    
+    setIsDownloading(true);
+    try {
+      // Create study plan content
+      const studyPlanContent = {
+        courseTitle: syllabusAnalysis.courseTitle,
+        courseCode: syllabusAnalysis.courseCode,
+        totalWeeks: studyPlan.totalWeeks,
+        hoursPerWeek: studyPlan.hoursPerWeek,
+        subjects: studyPlan.subjects,
+        modules: syllabusAnalysis.modules,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Convert to JSON and create downloadable file
+      const dataStr = JSON.stringify(studyPlanContent, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${syllabusAnalysis.courseTitle.replace(/\s+/g, '_')}_Study_Plan.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      addToast({
+        type: 'success',
+        message: 'Study plan downloaded successfully!'
+      });
+    } catch (error) {
+      console.error('Error downloading study plan:', error);
+      addToast({
+        type: 'error',
+        message: 'Failed to download study plan. Please try again.'
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -41,20 +168,48 @@ const UniversityExam = () => {  const [dragActive, setDragActive] = useState(fal
       setDragActive(false);
     }
   };
-
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setUploadedFile(e.dataTransfer.files[0]);
+      const file = e.dataTransfer.files[0];
+      const validation = validateFile(file);
+      
+      if (!validation.isValid) {
+        addToast({
+          type: 'error',
+          message: validation.error || 'Invalid file dropped'
+        });
+        return;
+      }
+      
+      setUploadedFile(file);
+      addToast({
+        type: 'success',
+        message: 'File uploaded successfully!'
+      });
     }
   };
-
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setUploadedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      const validation = validateFile(file);
+      
+      if (!validation.isValid) {
+        addToast({
+          type: 'error',
+          message: validation.error || 'Invalid file selected'
+        });
+        return;
+      }
+      
+      setUploadedFile(file);
+      addToast({
+        type: 'success',
+        message: 'File uploaded successfully!'
+      });
     }
   };
 
@@ -117,7 +272,10 @@ const UniversityExam = () => {  const [dragActive, setDragActive] = useState(fal
       
     } catch (error) {
       console.error('Error analyzing syllabus:', error);
-      setCurrentStep('upload');
+      setCurrentStep('upload');      addToast({
+        type: 'error',
+        message: 'Failed to analyze syllabus. Please try again.'
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -162,7 +320,10 @@ const UniversityExam = () => {  const [dragActive, setDragActive] = useState(fal
       setCurrentStep('course-ready');
       
     } catch (error) {
-      console.error('Error generating course:', error);
+      console.error('Error generating course:', error);      addToast({
+        type: 'error',
+        message: 'Failed to generate course. Please try again.'
+      });
     } finally {
       setIsGeneratingCourse(false);
     }
@@ -176,9 +337,26 @@ const UniversityExam = () => {  const [dragActive, setDragActive] = useState(fal
     setGeneratedCourse(null);
     setCurrentStep('upload');
   };
-
+  const handleStartLearning = () => {
+    addToast({
+      type: 'info',
+      message: 'Opening your course...'
+    });
+    
+    // Small delay for better UX feedback
+    setTimeout(() => {
+      navigate(`/course/${generatedCourse?.id}`);
+    }, 500);
+  };
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {/* Toast Notifications */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {toasts.map((toast) => (
+          <Toast key={toast.id} toast={toast} onRemove={removeToast} />
+        ))}
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -227,8 +405,7 @@ const UniversityExam = () => {  const [dragActive, setDragActive] = useState(fal
                 <Upload className="w-7 h-7 text-purple-600" />
                 Upload Your Syllabus
               </h2>
-              
-              <div
+                <div
                 className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
                   dragActive 
                     ? 'border-purple-500 bg-purple-50' 
@@ -240,6 +417,9 @@ const UniversityExam = () => {  const [dragActive, setDragActive] = useState(fal
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
+                role="button"
+                tabIndex={0}
+                aria-label="Drag and drop syllabus file or click to upload"
               >
                 {uploadedFile ? (
                   <div className="space-y-4">
@@ -442,17 +622,28 @@ const UniversityExam = () => {  const [dragActive, setDragActive] = useState(fal
 
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h4 className="font-semibold text-gray-900 mb-4">Actions</h4>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => {/* Download study plan */}}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                <div className="space-y-3">                  <button
+                    onClick={handleDownloadStudyPlan}
+                    disabled={isDownloading}
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    aria-label="Download study plan as JSON file"
                   >
-                    <Download className="w-4 h-4" />
-                    <span>Download Study Plan</span>
+                    {isDownloading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Downloading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4" />
+                        <span>Download Study Plan</span>
+                      </>
+                    )}
                   </button>
                   <button
                     onClick={resetProcess}
                     className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+                    aria-label="Upload a new syllabus"
                   >
                     <Upload className="w-4 h-4" />
                     <span>Upload New Syllabus</span>
@@ -554,11 +745,9 @@ const UniversityExam = () => {  const [dragActive, setDragActive] = useState(fal
                     ))}
                   </div>
                 </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
+              </div>              <div className="flex flex-col sm:flex-row gap-4">
                 <button
-                  onClick={() => window.location.href = `/courses/${generatedCourse.id}`}
+                  onClick={handleStartLearning}
                   className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-semibold flex items-center justify-center space-x-2"
                 >
                   <ArrowRight className="w-5 h-5" />
@@ -580,6 +769,13 @@ const UniversityExam = () => {  const [dragActive, setDragActive] = useState(fal
             </div>
           </div>
         )}
+
+        {/* Toast Notifications */}
+        <div className="fixed bottom-4 right-4 space-y-2 z-50">
+          {toasts.map(toast => (
+            <Toast key={toast.id} toast={toast} onRemove={removeToast} />
+          ))}
+        </div>
       </div>
     </div>
   );

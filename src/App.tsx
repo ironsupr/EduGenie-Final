@@ -14,12 +14,15 @@ import UniversityExam from './pages/UniversityExam';
 import EnhancedCourseLearning from './pages/ImprovedCourseLearning';
 import Quiz from './pages/Quiz';
 import TestPage from './TestPage';
+import TestYouTubeAgentPage from './pages/TestYouTubeAgentPage';
 import DebugCourses from './components/DebugCourses';
 import SimpleFirebaseTest from './components/SimpleFirebaseTest';
 import SimpleCoursesList from './components/SimpleCoursesList';
 import DirectFirebaseTest from './components/DirectFirebaseTest';
-import TestAINotesPage from './pages/TestAINotesPage';
-
+import TestAINotesGenerator from './components/TestAINotesGenerator';
+import TestMemoryAids from './components/TestMemoryAids';
+import TestTopicGeneration from './components/TestTopicGeneration';
+import TestGeminiConnection from './components/TestGeminiConnection';
 function App() {
   return (
     <AuthProvider>
@@ -28,7 +31,11 @@ function App() {
           <Navbar />
           <Routes>
             <Route path="/test" element={<TestPage />} />
-            <Route path="/test-ai-notes" element={<TestAINotesPage />} />
+            <Route path="/test-youtube" element={<TestYouTubeAgentPage />} />
+            <Route path="/test-ai-notes" element={<TestAINotesGenerator />} />
+            <Route path="/test-memory-aids" element={<TestMemoryAids />} />
+            <Route path="/test-topic-generation" element={<TestTopicGeneration />} />
+            <Route path="/test-gemini" element={<TestGeminiConnection />} />
             <Route path="/debug-courses" element={<DebugCourses />} />
             <Route path="/firebase-test" element={<SimpleFirebaseTest />} />
             <Route path="/simple-courses" element={<SimpleCoursesList />} />

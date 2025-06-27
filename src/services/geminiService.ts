@@ -19,9 +19,8 @@ class GeminiService {
         console.warn('Google AI API key not found. Gemini features will be disabled.');
         return;
       }
-        this.genAI = new GoogleGenerativeAI(apiKey);
-      // Try gemini-1.5-pro first, fallback to gemini-1.5-flash
-      const modelName = (import.meta as any).env?.GEMINI_MODEL || 'gemini-1.5-pro';
+        this.genAI = new GoogleGenerativeAI(apiKey);      // Try gemini-1.5-pro first, fallback to gemini-1.5-flash
+      const modelName = (import.meta as any).env?.VITE_GEMINI_MODEL || (import.meta as any).env?.GEMINI_MODEL || 'gemini-1.5-pro';
       this.model = this.genAI.getGenerativeModel({ model: modelName });
       console.log('Gemini service initialized successfully with model:', modelName);
     } catch (error) {
@@ -57,8 +56,7 @@ class GeminiService {
       throw new Error('Failed to generate content with Gemini AI: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   }
-
-  async analyzeVideoContent(title: string, description: string, transcript?: string): Promise<{
+  async analyzeVideoContent(title: string, description: string, _transcript?: string): Promise<{
     summary: string;
     keyTopics: string[];
     difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
@@ -67,37 +65,48 @@ class GeminiService {
     flashcards: Array<{ question: string; answer: string; }>;
     importantQuestions: string[];
   }> {
-    const content = `
-Title: ${title}
-Description: ${description}
-${transcript ? `Transcript: ${transcript.substring(0, 2000)}...` : ''}
-`;
-
     const prompt = `
-Analyze this educational video content and provide a comprehensive analysis in JSON format:
+Generate comprehensive educational content about the TOPIC/SUBJECT, not just video content analysis.
 
-${content}
+TOPIC TO TEACH: ${title}
+CONTEXT HINT: ${description}
+
+FOCUS ON TOPIC EDUCATION:
+- Generate content about the subject matter itself (e.g., if title is "Machine Learning Basics", teach about machine learning comprehensively)
+- Create educational content as if you're a subject expert teaching this topic
+- Don't limit to what might be in a video description or transcript
+- Provide complete coverage of the topic for thorough understanding
+- Include fundamental concepts, practical applications, and key insights
+- Make flashcards and questions that test topic mastery, not video recall
 
 Please return a JSON object with the following structure:
 {
-  "summary": "A concise 2-3 sentence summary of the video content",
-  "keyTopics": ["topic1", "topic2", "topic3"],
+  "summary": "A concise 2-3 sentence summary explaining what students will learn about this TOPIC and why it's important",
+  "keyTopics": ["fundamental aspect 1", "core concept 2", "practical application 3"],
   "difficulty": "Beginner|Intermediate|Advanced",
   "category": "Programming|Mathematics|Science|Business|Design|Language|Other",
-  "notes": "Detailed educational notes with key concepts, explanations, and examples. Include relevant diagrams in ASCII art if applicable.",
+  "notes": "Detailed educational notes covering the complete topic with key concepts, theoretical foundations, practical examples, and real-world applications. Focus on comprehensive topic education.",
   "flashcards": [
     {
-      "question": "Key concept question",
-      "answer": "Clear, concise answer"
+      "question": "Topic-focused question testing understanding of core concepts",
+      "answer": "Clear, educational answer that builds topic mastery"
     }
   ],
   "importantQuestions": [
-    "Important question 1 for understanding",
-    "Important question 2 for understanding"
+    "Deep understanding question about topic fundamentals",
+    "Application question testing practical topic knowledge"
   ]
 }
 
-Make sure to provide 5-8 flashcards and 3-5 important questions that test understanding of the core concepts.
+CRITICAL REQUIREMENTS:
+- TOPIC-FOCUSED: Generate content about the subject matter, not video analysis
+- EDUCATIONAL DEPTH: Cover theoretical foundations and practical applications
+- COMPREHENSIVE: Include all essential aspects students need to master the topic
+- FLASHCARDS: Create 5-8 flashcards that test topic understanding and build knowledge
+- QUESTIONS: Generate 3-5 important questions that assess topic mastery
+- ACADEMIC QUALITY: Suitable for educational study and assessment
+
+Make sure to provide 5-8 flashcards and 3-5 important questions that test comprehensive understanding of the TOPIC.
 Return only valid JSON without any markdown formatting or additional text.
 `;
 
@@ -105,25 +114,40 @@ Return only valid JSON without any markdown formatting or additional text.
       const response = await this.generateText(prompt);
       // Clean up the response to ensure it's valid JSON
       const cleanedResponse = response.replace(/```json\n?|\n?```/g, '').trim();
-      return JSON.parse(cleanedResponse);
-    } catch (error) {
+      return JSON.parse(cleanedResponse);    } catch (error) {
       console.error('Error analyzing video content:', error);
-      // Return fallback data
+      // Return fallback data that focuses on the topic
+      const topicWords = title.split(' ').slice(0, 3);
+      const mainTopic = topicWords.join(' ');
+      
       return {
-        summary: `Educational content about: ${title}`,
-        keyTopics: [title.split(' ').slice(0, 3).join(' ')],
+        summary: `Learn about ${title} - a comprehensive guide covering fundamental concepts, practical applications, and key insights in this important topic.`,
+        keyTopics: [
+          `${mainTopic} fundamentals`,
+          `${mainTopic} applications`,
+          `${mainTopic} best practices`
+        ],
         difficulty: 'Beginner' as const,
         category: 'Other',
-        notes: `# ${title}\n\n${description}\n\nKey learning points:\n- Main concepts covered in this video\n- Practical applications\n- Important takeaways`,
+        notes: `# ${title}\n\n## Overview\n${description}\n\n## Key Learning Points\n- Fundamental concepts and principles\n- Practical applications and use cases\n- Best practices and common approaches\n- Real-world examples and implementations\n\n## Important Concepts\n- Core principles underlying ${mainTopic}\n- Essential techniques and methods\n- Common patterns and solutions\n\n## Practical Applications\n- How ${mainTopic} is used in real scenarios\n- Benefits and advantages\n- Implementation considerations`,
         flashcards: [
           {
-            question: `What is the main topic of "${title}"?`,
-            answer: description.substring(0, 100) + '...'
+            question: `What are the fundamental concepts of ${title}?`,
+            answer: `${title} involves understanding core principles, practical applications, and best practices in this field.`
+          },
+          {
+            question: `Why is ${mainTopic} important to learn?`,
+            answer: `${mainTopic} provides essential knowledge and skills that are valuable for practical applications and professional development.`
+          },
+          {
+            question: `What are the key applications of ${mainTopic}?`,
+            answer: `${mainTopic} can be applied in various real-world scenarios to solve problems and create solutions.`
           }
         ],
         importantQuestions: [
-          `Explain the key concepts covered in "${title}".`,
-          `How can you apply what you learned from this video?`
+          `Explain the fundamental principles underlying ${title}.`,
+          `How can ${mainTopic} be applied in practical scenarios?`,
+          `What are the key benefits and advantages of understanding ${title}?`
         ]
       };
     }
@@ -195,7 +219,6 @@ Return only valid JSON without any markdown formatting.
     
     return modules;
   }
-
   async generateQuizQuestions(moduleContent: Array<{ title: string; summary: string; keyTopics: string[]; }>): Promise<Array<{
     question: string;
     options: string[];
@@ -206,30 +229,44 @@ Return only valid JSON without any markdown formatting.
       return this.fallbackQuizQuestions(moduleContent);
     }
 
-    const content = moduleContent.map(video => 
-      `Title: ${video.title}\nSummary: ${video.summary}\nKey Topics: ${video.keyTopics.join(', ')}`
-    ).join('\n\n');
-
     const prompt = `
-Based on this module content, create 5 multiple-choice quiz questions to test understanding:
+Generate quiz questions that test comprehensive understanding of these TOPICS, not just video content recall.
 
-${content}
+TOPICS TO CREATE QUIZ FOR:
+${moduleContent.map(video => 
+  `- TOPIC: ${video.title}\n  Summary: ${video.summary}\n  Key Areas: ${video.keyTopics.join(', ')}`
+).join('\n\n')}
+
+FOCUS ON TOPIC MASTERY:
+- Create questions that test understanding of the subject matter itself
+- Test conceptual knowledge, practical applications, and theoretical foundations
+- Questions should assess topic comprehension, not video recall
+- Include questions about fundamentals, applications, and advanced concepts
+- Make questions educational and suitable for academic assessment
 
 Please return a JSON array with this structure:
 [
   {
-    "question": "Clear, specific question about the content",
+    "question": "Clear, specific question testing topic understanding and mastery",
     "options": ["Option A", "Option B", "Option C", "Option D"],
     "correctAnswer": 0,
-    "explanation": "Why this answer is correct and brief explanation"
+    "explanation": "Educational explanation that reinforces topic understanding"
   }
 ]
 
+CRITICAL REQUIREMENTS:
+- TOPIC-FOCUSED: Questions test subject matter understanding, not video content recall
+- EDUCATIONAL VALUE: Questions should teach and reinforce key concepts
+- COMPREHENSIVE: Cover fundamental concepts, applications, and advanced topics
+- PRACTICAL: Include questions about real-world applications and use cases
+- ACADEMIC QUALITY: Suitable for educational assessment and skill evaluation
+
 Guidelines:
-- Questions should test understanding, not just memorization
-- Include a mix of conceptual and application questions
-- Make incorrect options plausible but clearly wrong
-- Provide helpful explanations for learning
+- Questions should test understanding and application, not just memorization
+- Include a mix of conceptual, practical, and analytical questions
+- Make incorrect options plausible but clearly wrong to experienced practitioners
+- Provide educational explanations that reinforce learning and topic mastery
+- Create 5 high-quality questions that comprehensively assess topic knowledge
 
 Return only valid JSON without any markdown formatting.
 `;
@@ -243,7 +280,6 @@ Return only valid JSON without any markdown formatting.
       return this.fallbackQuizQuestions(moduleContent);
     }
   }
-
   private fallbackQuizQuestions(moduleContent: Array<{ title: string; summary: string; keyTopics: string[]; }>): Array<{
     question: string;
     options: string[];
@@ -253,28 +289,42 @@ Return only valid JSON without any markdown formatting.
     const firstVideo = moduleContent[0];
     if (!firstVideo) return [];
 
+    const topicWords = firstVideo.title.split(' ').slice(0, 3).join(' ');
+    const firstKeyTopic = firstVideo.keyTopics[0] || 'key concepts';
+
     return [
       {
-        question: `What is the main focus of "${firstVideo.title}"?`,
+        question: `What are the fundamental concepts of ${firstVideo.title}?`,
         options: [
-          firstVideo.summary.substring(0, 50) + '...',
-          'Unrelated topic A',
-          'Unrelated topic B',
-          'Unrelated topic C'
+          `Understanding core principles and practical applications of ${topicWords}`,
+          'Basic video editing techniques',
+          'Social media marketing strategies',
+          'General computer skills'
         ],
         correctAnswer: 0,
-        explanation: 'This directly relates to the video content and main learning objectives.'
+        explanation: `This directly relates to the core educational content and fundamental understanding of ${firstVideo.title}.`
       },
       {
-        question: `Which of these topics is covered in this module?`,
+        question: `Which concept is most important when learning about ${topicWords}?`,
         options: [
-          'Unrelated topic',
-          firstVideo.keyTopics[0] || 'Key concept',
-          'Another unrelated topic',
-          'Yet another unrelated topic'
+          'Memorizing video content',
+          firstKeyTopic,
+          'Taking detailed notes',
+          'Watching multiple times'
         ],
         correctAnswer: 1,
-        explanation: 'This topic is specifically mentioned in the video content.'
+        explanation: `${firstKeyTopic} is a key concept that forms the foundation for understanding ${firstVideo.title}.`
+      },
+      {
+        question: `How can you best apply knowledge of ${firstVideo.title} in practice?`,
+        options: [
+          'By watching more videos on the topic',
+          'By taking extensive notes',
+          `By understanding the principles and applying them to real-world scenarios involving ${topicWords}`,
+          'By memorizing the content exactly'
+        ],
+        correctAnswer: 2,
+        explanation: `Practical application involves understanding the underlying principles and using them to solve real problems related to ${firstVideo.title}.`
       }
     ];
   }

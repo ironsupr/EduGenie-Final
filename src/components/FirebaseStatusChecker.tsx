@@ -245,7 +245,7 @@ const FirebaseStatusChecker = () => {
               {!status.services.authEnabled && (
                 <div>
                   <p className="font-medium">Authentication Setup:</p>
-                  <p>1. Go to <a href="https://console.firebase.google.com/project/edugenie-h-ba04c/authentication" className="underline" target="_blank" rel="noopener noreferrer">Firebase Authentication Console</a></p>
+                  <p>1. Go to <a href="https://console.firebase.google.com/project/edugenie-a/authentication" className="underline" target="_blank" rel="noopener noreferrer">Firebase Authentication Console</a></p>
                   <p>2. Click "Get started"</p>
                   <p>3. Enable "Email/Password" sign-in method</p>
                 </div>
@@ -253,7 +253,7 @@ const FirebaseStatusChecker = () => {
               {!status.services.firestoreEnabled && (
                 <div>
                   <p className="font-medium">Firestore Setup:</p>
-                  <p>1. Go to <a href="https://console.firebase.google.com/project/edugenie-h-ba04c/firestore" className="underline" target="_blank" rel="noopener noreferrer">Firebase Firestore Console</a></p>
+                  <p>1. Go to <a href="https://console.firebase.google.com/project/edugenie-a/firestore" className="underline" target="_blank" rel="noopener noreferrer">Firebase Firestore Console</a></p>
                   <p>2. Click "Create database"</p>
                   <p>3. Choose "Start in test mode"</p>
                 </div>
