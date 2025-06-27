@@ -160,8 +160,8 @@
 ### **Step 1: Clone Repository**
 
 ```bash
-git clone https://github.com/your-username/edugenie.git
-cd edugenie
+git clone https://github.com/ironsupr/EduGenie-Final.git
+cd EduGenie-Final
 ```
 
 ### **Step 2: Install Dependencies**
@@ -527,10 +527,10 @@ For support, please contact:
 
 - **Email**: support@edugenie.com
 - **Documentation**: [docs.edugenie.com](https://docs.edugenie.com)
-- **Issues**: [GitHub Issues](https://github.com/your-username/edugenie/issues)
+- **Issues**: [GitHub Issues](https://github.com/ironsupr/EduGenie-Final/issues)
 
 ---
 
-**Built with ❤️ by the EduGenie Team**
+**Built with ❤️ by the Abhinav Singh**
 
 _Transforming education through the power of AI_
